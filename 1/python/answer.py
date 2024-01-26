@@ -1,4 +1,4 @@
-with open("question", "r") as file:
+with open("../question", "r") as file:
     question = file.read()
 
 question_lines = question.split("\n")
