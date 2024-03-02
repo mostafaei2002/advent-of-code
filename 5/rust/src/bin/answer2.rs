@@ -1,10 +1,12 @@
-use iter_progress::ProgressableIter;
+use rayon::prelude::*;
 use std::fs;
 
 // 2.2 Billion Seeds
 // 3.6 Billion Locations reverse
 
-// Run without Paralellization , Close to 0 memory, 12.5% CPU, 4500sec wrong answer => 1.15Hour
+// Run without Paralellization , Close to 0 memory, 12.5% CPU, 4500sec => 1.15Hours
+// Run with Rayon, Close to 0 memory, 100% CPU, 1700 Seconds => 26 mins
+// Run with Rayon, Better Async, 1350 Sec => 23 Mins
 
 struct Question {
     ranges: Vec<(u64, u64)>,
@@ -71,33 +73,23 @@ impl Question {
     }
 
     fn solve(&self) -> u64 {
-        let mut smallest_soil: Option<u64> = None;
+        let smallest_soil = self
+            .ranges
+            .par_iter() // Parallel iterator over ranges
+            .map(|range| {
+                let start = range.0;
+                let end = start + range.1;
 
-        for range in &self.ranges {
-            let start = range.0;
-            let end = start + range.1;
+                println!("going through {}-{} a range of {}", start, end, range.1);
 
-            println!("going through {start}-{end} a range of {}", range.1);
-
-            (start..end).progress().for_each(|(state, seed)| {
-                state.do_every_n_sec(1., |state| {
-                    println!(
-                        "{}% the way though, and doing {} per sec.",
-                        state.percent().unwrap(),
-                        state.rate()
-                    );
-                });
-
-                let soil = Self::convert(seed, &self.maps);
-
-                smallest_soil = match smallest_soil {
-                    Some(cur) => Some(std::cmp::min(soil, cur)),
-                    None => Some(soil),
-                };
+                (start..end)
+                    .into_par_iter()
+                    .map(|seed| Self::convert(seed, &self.maps))
+                    .min() // Find minimum soil value within the range
             })
-        }
+            .min(); // Find minimum soil value across all ranges
 
-        smallest_soil.unwrap()
+        smallest_soil.unwrap().unwrap()
     }
 
     fn convert(seed: u64, maps: &Vec<Vec<Vec<u64>>>) -> u64 {
