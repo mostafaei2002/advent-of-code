@@ -1,4 +1,5 @@
 **/.vscode/
 **/target/**
+**/__pycache__/**
 **/example
 **/question
