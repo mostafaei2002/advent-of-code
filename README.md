@@ -1,3 +1,3 @@
 # Advent Of Code
 
-I'll be solving advent of code questions in multiple languages here mainly python, javascript, go, rust, c & php.
+I'll be solving advent of code questions in different languages here including Rust, Python, JavaScript & maybe Go.
